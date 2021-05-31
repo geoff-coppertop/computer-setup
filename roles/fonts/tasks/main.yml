@@ -1,0 +1,13 @@
+---
+- name: Get user
+  ansible.builtin.user:
+    name: '{{ ansible_user }}'
+    state: present
+  register: user
+
+- name: Install fonts
+  copy:
+    src: '{{ item.src }}'
+    dest: '{{ user.home }}/Library/Fonts/{{ item.path }}'
+  with_filetree: ../templates
+  when: item.state == 'file'

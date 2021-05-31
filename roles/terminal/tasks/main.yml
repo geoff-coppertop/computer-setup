@@ -1,0 +1,103 @@
+---
+- name: Install ZSH
+  community.general.homebrew:
+    name: zsh
+    state: present
+    update_homebrew: true
+
+- name: Get ZSH path
+  ansible.builtin.command: which zsh
+  register: zsh_location
+
+- name: Ensure homebrew zsh is in allowed shells
+  lineinfile:
+    path: /etc/shells
+    line: '{{ zsh_location.stdout }}'
+  become: true
+
+- name: Get user
+  ansible.builtin.user:
+    name: '{{ ansible_user }}'
+    shell: '{{ zsh_location.stdout }}'
+    state: present
+  register: user
+  become: true
+
+- name: Check if oh-my-zsh exists
+  stat:
+    path: '{{ user.home }}/.oh-my-zsh'
+  register: omz_path
+
+- name: Install git
+  community.general.homebrew:
+    name: git
+    state: present
+    update_homebrew: true
+
+- name: Checkout oh-my-zsh repository
+  ansible.builtin.git:
+    repo: https://github.com/ohmyzsh/ohmyzsh
+    dest: '{{ user.home }}/.oh-my-zsh'
+    depth: 1
+  when: not omz_path.stat.exists
+
+- name: Check if the p10k theme exists
+  stat:
+    path: '{{ user.home }}/.oh-my-zsh/custom/themes/powerlevel10k'
+  register: p10k_path
+
+- name: Checkout p10k theme repository
+  ansible.builtin.git:
+    repo: https://github.com/romkatv/powerlevel10k
+    dest: '{{ user.home }}/.oh-my-zsh/custom/themes/powerlevel10k'
+    depth: 1
+  when: not p10k_path.stat.exists
+
+- name: Install iterm2
+  community.general.homebrew_cask:
+    name: iterm2
+    state: present
+    update_homebrew: true
+
+- name: Ensure iTerm directories are initialized if they are not already.
+  command: open -a /Applications/iTerm.app
+  args:
+    creates: '{{ user.home }}/Library/Application Support/iTerm2/DynamicProfiles/'
+
+- name: Ensure shell integration is installed.
+  shell: curl -L https://iterm2.com/misc/install_shell_integration.sh | bash
+  args:
+    warn: false
+
+- name: Install iTerm profile
+  copy:
+    src: '{{ item.src }}'
+    dest: '{{ user.home }}/Library/Application Support/iTerm2/DynamicProfiles/{{ item.path }}'
+  with_filetree: ../templates
+  when: item.state == 'file'
+
+- name: Attempting to apply iterm2 configurations
+  community.general.osx_defaults:
+    domain: com.googlecode.iterm2
+    key: '{{ item.name }}'
+    type: '{{ item.type }}'
+    value: '{{ item.value }}'
+  loop:
+  - name: Default Bookmark Guid
+    type: string
+    value: 99871ED7-F3BB-478A-8789-6C31EAC417EC
+  - name: OnlyWhenMoreTabs
+    type: bool
+    value: false
+  - name: PromptOnQuit
+    type: bool
+    value: false
+  - name: QuitWhenAllWindowsClosed
+    type: bool
+    value: true
+  - name: SUEnableAutomaticChecks
+    type: bool
+    value: true
+  - name: NoSyncTipsDisabled
+    type: bool
+    value: true

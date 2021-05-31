@@ -1,0 +1,20 @@
+---
+- name: Generate SSH key
+  user:
+    name: '{{ ansible_user }}'
+    generate_ssh_key: true
+    ssh_key_bits: 4096
+    state: present
+    force: false
+  register: user
+
+- name: Read SSH public key to authorize
+  ansible.builtin.shell: cat '{{ user.home }}'/.ssh/id_rsa.pub
+  register: ssh_pub_key
+
+- name: Authorize key with GitHub
+  community.general.github_key:
+    force: false
+    name: '{{ ansible_user }} on {{ ansible_hostname }}'
+    pubkey: '{{ ssh_pub_key.stdout }}'
+    token: '{{ github_access_token }}'

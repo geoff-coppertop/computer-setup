@@ -1,0 +1,21 @@
+---
+- name: Get user
+  ansible.builtin.user:
+    name: '{{ ansible_user }}'
+    state: present
+  register: user
+
+- name: Remove existing dotfiles
+  file:
+    state: absent
+    dest: '{{ user.home }}/.{{ item.path }}'
+  with_filetree: ../templates
+  when: item.state == 'file'
+
+- name: Copy dotfiles
+  copy:
+    src: '{{ item.src }}'
+    dest: '{{ user.home }}/.{{ item.path }}'
+    mode: u=r,g=r,o=rw
+  with_filetree: ../templates
+  when: item.state == 'file'

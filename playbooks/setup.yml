@@ -1,0 +1,34 @@
+---
+- hosts: local
+  gather_facts: true
+  roles:
+  - ssh
+  - fonts
+  - dotfiles
+  - directories
+  - terminal
+  tasks:
+  - name: Use homebrew to install things
+    community.general.homebrew_cask:
+      name: '{{ item }}'
+      state: present
+      update_homebrew: true
+    with_items:
+    - visual-studio-code
+    - sourcetree
+    - signal
+    - discord
+    - steam
+    - zwift
+    - autodesk-fusion360
+    - ultimaker-cura
+    - wireshark
+
+  - name: Use homebrew to install more things
+    community.general.homebrew:
+      name: '{{ item }}'
+      state: present
+      update_homebrew: true
+    with_items:
+    - sl
+    - wireshark

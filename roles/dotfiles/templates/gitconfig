@@ -1,0 +1,55 @@
+[user]
+  name = Geoffrey Thomas
+  email = geoff.coppertop@gmail.com
+
+[core]
+  autocrlf = input
+  fileMode = false
+  whitespace = cr-at-eol,tab-in-indent
+  longpaths = true
+  excludesfile = /Users/thomasga/.gitignore_global
+
+[color]
+  diff = auto
+  status = auto
+  branch = auto
+  ui = true
+
+[alias]
+  st  = status
+  dft = difftool
+  met = mergetool
+  pug = "!p() { git push origin HEAD:refs/for/$1; }; p"
+  sfn = "submodule foreach git clean -xffdn"
+  sfc = "submodule foreach git clean -xffd"
+  upd = "submodule update --recursive --init"
+  lnc = log --pretty=format:"%h\\ %s"
+  amd = commit --amend
+
+[init]
+  templatedir = ~/.git-templates
+
+[commit]
+  template = ~/.gittemplate
+
+[filter "lfs"]
+  required = true
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
+
+[diff]
+  tool = sourcetree
+[difftool]
+  prompt = false
+[difftool "sourcetree"]
+  cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+  path =
+
+[merge]
+  tool = sourcetree
+[mergetool]
+  prompt = false
+[mergetool "sourcetree"]
+	cmd = /Applications/Sourcetree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+	trustExitCode = true

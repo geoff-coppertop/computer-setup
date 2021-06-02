@@ -17,7 +17,7 @@
 
 - name: Get user
   ansible.builtin.user:
-    name: '{{ ansible_user }}'
+    name: '{{ user_name }}'
     shell: '{{ zsh_location.stdout }}'
     state: present
   register: user

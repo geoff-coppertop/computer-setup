@@ -1,7 +1,7 @@
 ---
 - name: Generate SSH key
   user:
-    name: '{{ ansible_user }}'
+    name: '{{ user_name }}'
     generate_ssh_key: true
     ssh_key_bits: 4096
     state: present
@@ -15,6 +15,6 @@
 - name: Authorize key with GitHub
   community.general.github_key:
     force: false
-    name: '{{ ansible_user }} on {{ ansible_hostname }}'
+    name: '{{ user.name }} on {{ ansible_hostname }}'
     pubkey: '{{ ssh_pub_key.stdout }}'
     token: '{{ github_access_token }}'

@@ -1,12 +1,24 @@
 ---
-- hosts: local
+- hosts: localhost
+  connection: local
   gather_facts: true
+
+  vars_prompt:
+  - name: user_name
+    prompt: Which user do you wish to modify?
+    private: false
+
+  - name: github_access_token
+    prompt: What is your github access token?
+    private: false
+
   roles:
   - ssh
   - fonts
   - dotfiles
   - directories
   - terminal
+
   tasks:
   - name: Use homebrew to install things
     community.general.homebrew_cask:

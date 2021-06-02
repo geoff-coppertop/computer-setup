@@ -1,7 +1,0 @@
----
-timezone: America/Edmonton
-
-# ansible
-ansible_user: user
-
-github_access_token: fake_token

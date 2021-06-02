@@ -1,7 +1,7 @@
 ---
 - name: Get user
   ansible.builtin.user:
-    name: '{{ ansible_user }}'
+    name: '{{ user_name }}'
     state: present
   register: user
 

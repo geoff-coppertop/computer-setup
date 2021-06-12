@@ -43,3 +43,4 @@
       update_homebrew: true
     with_items:
     - sl
+    - postgresql

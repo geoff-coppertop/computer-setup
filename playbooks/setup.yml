@@ -35,6 +35,8 @@
     - autodesk-fusion360
     - ultimaker-cura
     - wireshark
+    - postman
+    - balenaetcher
 
   - name: Use homebrew to install more things
     community.general.homebrew:
@@ -44,3 +46,6 @@
     with_items:
     - sl
     - postgresql
+    - go
+    - rust
+    - rustup-init

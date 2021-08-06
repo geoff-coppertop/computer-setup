@@ -1,0 +1,120 @@
+---
+- name: Am I running on Mac OS X?
+  fail:
+    msg: Target host is not running Mac OS X
+  when: ansible_facts['distribution'] != 'MacOSX'
+
+- name: Install Rosetta 2
+  command: /usr/sbin/softwareupdate --install-rosetta --agree-to-license
+  when:
+  - ansible_facts['architecture'] == 'arm64'
+
+# https://macos-defaults.com/#🙋-what-s-a-defaults-command
+# https://developer.apple.com/documentation/devicemanagement/dock
+- name: Configure the dock
+  community.general.osx_defaults:
+    domain: '{{ item.domain }}'
+    key: '{{ item.key }}'
+    type: '{{ item.type }}'
+    value: '{{ item.value }}'
+  loop:
+  - {domain: com.apple.dock, key: enable-spring-load-actions-on-all-items, type: boolean, value: 'true'}
+  - {domain: com.apple.dock, key: largesize, type: integer, value: '128'}
+  - {domain: com.apple.dock, key: minimize-to-application, type: boolean, value: 'true'}
+  - {domain: com.apple.dock, key: tilesize, type: integer, value: '16'}
+  - {domain: com.apple.dock, key: magnification, type: boolean, value: 'true'}
+  notify:
+  - restart dock
+
+- name: Configure the trackpad
+  community.general.osx_defaults:
+    domain: '{{ item.domain }}'
+    key: '{{ item.key }}'
+    type: '{{ item.type }}'
+    value: '{{ item.value }}'
+  loop:
+  - {domain: com.apple.AppleMultitouchTrackpad, key: Clicking, type: boolean, value: 'true'}
+  - {domain: com.apple.AppleMultitouchTrackpad, key: DragLock, type: boolean, value: 'false'}
+  - {domain: com.apple.AppleMultitouchTrackpad, key: Dragging, type: boolean, value: 'false'}
+  - {domain: com.apple.AppleMultitouchTrackpad, key: TrackpadThreeFingerDrag, type: boolean, value: 'true'}
+  - {domain: com.apple.driver.AppleBluetoothMultitouch.trackpad, key: Clicking, type: boolean, value: 'true'}
+  - {domain: com.apple.driver.AppleBluetoothMultitouch.trackpad, key: DragLock, type: boolean, value: 'false'}
+  - {domain: com.apple.driver.AppleBluetoothMultitouch.trackpad, key: Dragging, type: boolean, value: 'false'}
+  # yamllint disable rule:line-length
+  - {domain: com.apple.driver.AppleBluetoothMultitouch.trackpad, key: TrackpadThreeFingerDrag, type: boolean, value: 'true'}
+  # yamllint enable rule:line-length
+  - {domain: Apple Global Domain, key: com.apple.trackpad.scaling, type: float, value: '3'}
+  - {domain: com.apple.dock, key: showAppExposeGestureEnabled, type: boolean, value: 'true'}
+  notify:
+  - restart dock
+
+# https://github.com/reecefowell/provision-ansible-mac/blob/master/ansible/group_vars/osx_config_app.yml
+- name: Configure finder
+  community.general.osx_defaults:
+    domain: '{{ item.domain }}'
+    key: '{{ item.key }}'
+    type: '{{ item.type }}'
+    value: '{{ item.value }}'
+  loop:
+  - {domain: com.apple.finder, key: ShowPathbar, type: boolean, value: 'true'}
+  - {domain: com.apple.finder, key: ShowStatusBar, type: boolean, value: 'true'}
+  # Four-letter codes for the other view modes: `icnv`, `clmv`, `Flwv`
+  - {domain: com.apple.finder, key: FXPreferredViewStyle, type: string, value: Nlsv}
+  # Disable the warning when changing a file extension
+  - {domain: com.apple.finder, key: FXEnableExtensionChangeWarning, type: boolean, value: 'false'}
+  # Keep folders on top when sorting by name
+  - {domain: com.apple.finder, key: _FXSortFoldersFirst, type: boolean, value: 'true'}
+  # Automatically open a new Finder window when a volume is mounted
+  - {domain: com.apple.frameworks.diskimages, key: auto-open-ro-root, type: boolean, value: 'true'}
+  - {domain: com.apple.frameworks.diskimages, key: auto-open-rw-root, type: boolean, value: 'true'}
+  # Show icons for hard drives, servers, and removable media on the desktop
+  - {domain: com.apple.finder, key: OpenWindowForNewRemovableDisk, type: boolean, value: 'true'}
+  - {domain: com.apple.finder, key: ShowExternalHardDrivesOnDesktop, type: boolean, value: 'true'}
+  - {domain: com.apple.finder, key: ShowHardDrivesOnDesktop, type: boolean, value: 'true'}
+  - {domain: com.apple.finder, key: ShowMountedServersOnDesktop, type: boolean, value: 'true'}
+  - {domain: com.apple.finder, key: ShowExternalHardDrivesOnDesktop, type: boolean, value: 'true'}
+  - {domain: com.apple.finder, key: ShowRemovableMediaOnDesktop, type: boolean, value: 'true'}
+  # Show absolute path in finder's title bar.
+  - {domain: com.apple.finder, key: _FXShowPosixPathInTitle, type: boolean, value: 'true'}
+  # Set default Finder location to home folder (~/)
+  - {domain: com.apple.finder, key: NewWindowTarget, type: string, value: PfLo}
+  - {domain: com.apple.finder, key: NewWindowTargetPath, type: string, value: 'file://${HOME}'}
+  # Use current directory as default search scope in Finder
+  - {domain: com.apple.finder, key: FXDefaultSearchScope, type: string, value: SCcf}
+  # Enable spring loading for directories
+  - {domain: NSGlobalDomain, key: com.apple.springing.enabled, type: boolean, value: 'true'}
+  # Remove the spring loading delay for directories
+  - {domain: NSGlobalDomain, key: com.apple.springing.delay, type: float, value: '0'}
+  # Disable ext change warning
+  - {domain: com.apple.finder, key: FXEnableExtensionChangeWarning, type: boolean, value: 'false'}
+  notify:
+  - restart finder
+
+- name: Configure .DS_Store file creation
+  community.general.osx_defaults:
+    domain: '{{ item.domain }}'
+    key: '{{ item.key }}'
+    type: '{{ item.type }}'
+    value: '{{ item.value }}'
+  loop:
+  - {domain: com.apple.desktopservices, key: DSDontWriteNetworkStores, type: boolean, value: 'true'}
+  - {domain: com.apple.desktopservices, key: DSDontWriteUSBStores, type: boolean, value: 'true'}
+
+- name: Show the ~/Library folder
+  command: chflags nohidden ~/Library
+
+- name: Show the /Volumes folder
+  command: chflags nohidden /Volumes
+  become: true
+
+- name: Configure keyboard
+  community.general.osx_defaults:
+    domain: '{{ item.domain }}'
+    key: '{{ item.key }}'
+    type: '{{ item.type }}'
+    value: '{{ item.value }}'
+  loop:
+  # keyboard tab navigation
+  - {domain: NSGlobalDomain, key: AppleKeyboardUIMode, type: int, value: '3'}
+  notify:
+  - restart dock

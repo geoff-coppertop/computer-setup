@@ -1,4 +1,5 @@
 ---
+# https://dev.to/katsuhisa91/my-ansible-playbook-for-setup-m1-mac-2j9m
 - hosts: localhost
   connection: local
   gather_facts: true
@@ -38,15 +39,93 @@
     - wireshark
     - postman
     - balenaetcher
+    - docker
+    - mqtt-explorer
 
   - name: Use homebrew to install more things
     community.general.homebrew:
       name: '{{ item }}'
       state: present
       update_homebrew: true
-    with_items:
+    loop:
     - sl
     - postgresql
     - go
     - rust
     - rustup-init
+
+- hosts: localhost
+  vars:
+    dockitems_remove:
+    - Launchpad
+    - Podcasts
+    - App Store
+    - Maps
+    - Calendar
+    - Contacts
+    - Notes
+    - Podcasts
+    - Keynote
+    - News
+    - Numbers
+    - Pages
+    - System Preferences
+    - Mail
+
+    dockitems_persist:
+    - name: Photos
+      path: /Applications/Safari.app/
+      pos: 1
+
+    - name: TV
+      path: /System/Applications/TV.app/
+      pos: 2
+    - name: Music
+      path: /System/Applications/Music.app/
+      pos: 3
+
+    - name: Steam
+      path: /Applications/Steam.app/
+      pos: 4
+
+    - name: Safari
+      path: /Applications/Safari.app/
+      pos: 5
+
+    - name: Reminders
+      path: /System/Applications/Reminders.app/
+      pos: 6
+
+    - name: Messages
+      path: /System/Applications/Messages.app/
+      pos: 7
+    - name: Signal
+      path: /Applications/Signal.app/
+      pos: 8
+    - name: Discord
+      path: /Applications/Discord.app/
+      pos: 9
+    - name: FaceTime
+      path: /System/Applications/FaceTime.app/
+      pos: 10
+
+    - name: Visual Studio Code
+      path: /Applications/Visual Studio Code.app/
+      pos: 11
+    - name: iTerm
+      path: /Applications/iTerm.app/
+      pos: 12
+    - name: MQTT Explorer
+      path: /Applications/MQTT Explorer.app/
+      pos: 13
+    - name: Postman
+      path: /Applications/Postman.app/
+      pos: 14
+
+    - name: Autodesk Fusion 360
+      path: ~/Applications/Autodesk Fusion 360.app/
+      pos: 15
+
+  roles:
+  - geerlingguy.mac.homebrew
+  - geerlingguy.mac.dock

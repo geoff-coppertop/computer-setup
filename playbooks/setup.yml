@@ -18,6 +18,7 @@
   - dotfiles
   - directories
   - terminal
+  - app_store
 
   tasks:
   - name: Use homebrew to install things

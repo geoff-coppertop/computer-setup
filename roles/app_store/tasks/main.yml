@@ -1,0 +1,52 @@
+---
+- name: Use homebrew to install Mac App Store client
+  community.general.homebrew:
+    name: mas
+    state: present
+    update_homebrew: true
+
+- name: Get MAS account status
+  command: mas account
+  register: need_signin
+  failed_when: need_signin.rc > 1
+  check_mode: false
+  changed_when: false
+
+- name: Start the Mac App Store if we need to signin
+  command: open /System/Applications/App\ Store.app
+  when:
+  - need_signin.rc == 1
+
+# while not signed in
+- name: Get MAS account status
+  command: mas account
+  register: mas_account_result
+  failed_when: mas_account_result.rc > 1
+  check_mode: false
+  changed_when: false
+  until: mas_account_result.rc == 0
+  retries: 720  # 720 * 5 seconds = 1hour (60*60/5)
+  delay: 5  # Every 5 seconds
+  when:
+  - need_signin.rc == 1
+
+- name: Kill the Mac App Store if we needed to signin
+  command: pkill App\ Store
+  when:
+  - need_signin.rc == 1
+
+- name: Install specific apps and also upgrade all others
+  community.general.mas:
+    id:
+    - 441258766   # Magnet
+    - 425424353   # The Unarchiver
+    state: present
+    upgrade_all: true
+# when:
+# - mas_account_result.rc == 0
+# - need_signin.rc == 0
+
+- name: Setup Magnet
+  command: open /Applications/Magnet.app
+  check_mode: false
+  changed_when: false

@@ -6,7 +6,7 @@
     update_homebrew: true
 
 - name: Get ZSH path
-  ansible.builtin.command: which zsh
+  command: which zsh
   register: zsh_location
 
 - name: Ensure homebrew zsh is in allowed shells
@@ -16,7 +16,7 @@
   become: true
 
 - name: Get user
-  ansible.builtin.user:
+  user:
     name: '{{ user_name }}'
     shell: '{{ zsh_location.stdout }}'
     state: present
@@ -35,7 +35,7 @@
     update_homebrew: true
 
 - name: Checkout oh-my-zsh repository
-  ansible.builtin.git:
+  git:
     repo: https://github.com/ohmyzsh/ohmyzsh
     dest: '{{ user.home }}/.oh-my-zsh'
     depth: 1
@@ -47,7 +47,7 @@
   register: p10k_path
 
 - name: Checkout p10k theme repository
-  ansible.builtin.git:
+  git:
     repo: https://github.com/romkatv/powerlevel10k
     dest: '{{ user.home }}/.oh-my-zsh/custom/themes/powerlevel10k'
     depth: 1
@@ -58,6 +58,14 @@
     name: iterm2
     state: present
     update_homebrew: true
+
+- name: Start iTerm
+  command: open /Applications/iTerm.app
+  check_mode: false
+  changed_when: false
+
+- pause:
+    prompt: Allow iTerm2 to start
 
 - name: Ensure iTerm directories are initialized if they are not already.
   command: open -a /Applications/iTerm.app

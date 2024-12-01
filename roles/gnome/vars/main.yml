@@ -1,0 +1,5 @@
+---
+theme: "Yaru"
+theme_colour: "blue"
+theme_darkness: "dark"
+theme_name: "{{ theme }}-{{ theme_colour }}-{{ theme_darkness }}"

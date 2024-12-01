@@ -1,4 +1,18 @@
 ---
+# terminate if not running on gnome
+
+- name: Install apt packages
+  ansible.builtin.apt:
+    name:
+      - gnome-sushi
+      - gnome-tweak-tool
+      - gnome-shell-extension-manager
+      - pipx
+      - gir1.2-gtop-2.0
+      - lm-sensors
+      - python3-psutil
+    state: present
+
 - name: Configure gnome
   community.general.dconf:
     key: '{{ item.address }}'
@@ -8,10 +22,25 @@
     - { address: "/org/gnome/nautilus/preferences", key: "default-folder-viewer", value: "list-view" } # Use list view by default
     - { address: "/org/gnome/nautilus/preferences", key: "default-sort-order", value: "type" } # Sort files by type
     - { address: "/org/gnome/nautilus/list-view", key: "default-zoom-level", value: "small" } # Small zoom level
-    - { address: "/org/gnome/nautilus/preferences", key: "default-folder-viewer", value: "list-view" } # Use list view by default
-    - { address: "/org/gnome/nautilus/preferences", key: "default-folder-viewer", value: "list-view" } # Use list view by default
-    - { address: "/org/gnome/nautilus/preferences", key: "default-folder-viewer", value: "list-view" } # Use list view by default
-    - { address: "/org/gnome/nautilus/preferences", key: "default-folder-viewer", value: "list-view" } # Use list view by default
+
+    # https://github.com/GNOME/gsettings-desktop-schemas/blob/master/schemas/org.gnome.desktop.interface.gschema.xml.in
+    - { address: "/org/gnome/desktop/interface", key: "color-scheme", value: "prefer-{{ theme_darkness }}" }
+    - { address: "/org/gnome/desktop/interface", key: "cursor-theme", value: "{{ theme }}" }
+    - { address: "/org/gnome/desktop/interface", key: "gtk-theme", value: "{{ theme_name }}" }
+    - { address: "/org/gnome/desktop/interface", key: "icon-theme", value: "{{ theme_name }}" }
+    - { address: "/org/gnome/desktop/interface", key: "cursor-blink", value: "true" }
+    - { address: "/org/gnome/desktop/interface", key: "cursor-blink-timee", value: "1200" }
+
+    # Add rejection of bouncing keys
+    # https://github.com/GNOME/gsettings-desktop-schemas/blob/master/schemas/org.gnome.desktop.a11y.keyboard.gschema.xml.in
+    - { address: "/org/gnome/desktop/a11y/keyboard", key: "bouncekeys-enable", value: "true" }
+    - { address: "/org/gnome/desktop/a11y/keyboard", key: "bouncekeys-delay", value: "60" }
+    - { address: "/org/gnome/desktop/a11y/keyboard", key: "bouncekeys-beep-reject", value: "true" }
+
+    # https://github.com/GNOME/gsettings-desktop-schemas/blob/master/schemas/org.gnome.desktop.peripherals.gschema.xml.in
+    - { address: "/org/gnome/desktop/peripherals/keyboard", key: "repeat", value: "true" }
+    - { address: "/org/gnome/desktop/peripherals/keyboard", key: "repeat-interval", value: "30" }
+    - { address: "/org/gnome/desktop/peripherals/keyboard", key: "delay", value: "500" }
 
 - name: Get user
   ansible.builtin.user:
@@ -28,27 +57,20 @@
     mode: u=rwx,g=rx,o=rx
   with_items:
     - builds
-    - .config/nautilus
+    - .config/gnome
 
 - name: Remove existing Nautilus configuration files
-  file:
+  ansible.builtin.file:
     state: absent
     dest: '{{ user.home }}/.config/gtk-3.0/bookmarks'
 
-- name: Remove existing bash configuration files
-  file:
-    state: absent
-    dest: '{{ user.home }}/.config/nautilus/{{ item.path }}'
-  with_filetree: ../templates
-  when: item.state == 'file'
-
 - name: Copy bash configuration files
-  copy:
-    src: '{{ item.src }}'
-    dest: '{{ user.home }}/.config/nautilus/{{ item.path }}'
+  ansible.builtin.copy:
+    dest: '{{ user.home }}/.config/nautilus/{{ item }}'
     mode: u=rw,g=r,o=r
-  with_filetree: ../templates
-  when: item.state == 'file'
+  with_items:
+    - bookmarks
+    - f18-silhouette.jpg
 
 - name: Create a symbolic link
   ansible.builtin.file:

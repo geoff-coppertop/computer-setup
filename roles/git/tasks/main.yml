@@ -1,0 +1,93 @@
+---
+- name: Generate SSH key
+  user:
+    name: '{{ user_name }}'
+    generate_ssh_key: true
+    ssh_key_bits: 4096
+    state: present
+    force: false
+  register: user
+  
+- name: Authorize key with GitHub
+  community.general.github_key:
+    name: Access Key for Some Machine
+    token: '{{ github_access_token }}'
+    pubkey: "{{ lookup('ansible.builtin.file', '{{ user.home }}/.ssh/id_rsa.pub') }}"
+
+- name: Create a git config directory if it does not exist
+  ansible.builtin.file:
+    path: '{{ user.home }}/.config/git'
+    state: directory
+    mode: '0755'
+
+- name: Remove existing git configuration files
+  file:
+    state: absent
+    dest: '{{ user.home }}/.config/git/{{ item.path }}'
+  with_filetree: ../templates
+  when: item.state == 'file'
+
+- name: Copy git configuration files
+  copy:
+    src: '{{ item.src }}'
+    dest: '{{ user.home }}/.config/git/{{ item.path }}'
+    owner: '{{ user.name }}'
+    group: '{{ user.group }}'
+    mode: u=r,g=r,o=rw
+  with_filetree: ../templates
+  when: item.state == 'file'
+
+- name: Create a symbolic link
+  ansible.builtin.file:
+    src: '{{ user.home }}/.config/git/gitconfig'
+    dest: '{{ user.home }}/.gitconfig'
+    owner: '{{ user.name }}'
+    group: '{{ user.group }}'
+    mode: u=r,g=r,o=rw
+    state: link
+
+# cp $CONFIG_PATH/git/gitconfig $HOME/.gitconfig
+
+# mkdir -p $HOME/.git/templates/
+
+# cp $CONFIG_PATH/git/commit-template.txt $HOME/.git/templates/commit-template.txt
+
+# # Lazygit
+# cd /tmp
+# LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+# curl -sLo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+# tar -xf lazygit.tar.gz lazygit
+# sudo install lazygit /usr/local/bin
+# rm lazygit.tar.gz lazygit
+# cd -
+
+# # git large file storage
+# cd /tmp
+
+# wget -O git-lfs.tar.gz https://github.com/git-lfs/git-lfs/releases/download/v3.5.1/git-lfs-linux-amd64-v3.5.1.tar.gz
+# tar -xf git-lfs.tar.gz
+# sudo git-lfs-*/install.sh
+# rm -rf git-lfs.tar.gz git-lfs-*/
+
+# cd -
+
+# git lfs install
+
+# # Pre-commit
+# pip install pre-commit
+# pre-commit init-templatedir ~/.git/
+
+# # git credential manager
+# cd /tmp
+
+# wget -O gcm-install.sh https://aka.ms/gcm/linux-install-source.sh
+# chmod +x gcm-install.sh
+# ./gcm-install.sh
+# git-credential-manager configure
+
+# cd -
+
+# # https://gist.github.com/maelvls/79d49740ce9208c26d6a1b10b0d95b5e
+# # https://askubuntu.com/a/1469736
+# # https://github.com/hickford/git-credential-oauth
+# sudo apt-get install git-credential-oauth

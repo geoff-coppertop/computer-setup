@@ -1,0 +1,34 @@
+---
+- name: Install Alacritty
+  ansible.builtin.apt:
+    name: alacritty
+    state: present
+    update_cache: yes
+
+- name: Create a directory if it does not exist
+  ansible.builtin.file:
+    path: '{{ user.home }}/.config/alacritty'
+    owner: '{{ user.name }}'
+    group: '{{ user.group }}'
+    state: directory
+    mode: u=r,g=r,o=rw
+
+- name: Remove existing Alacritty configuration files
+  ansible.builtin.file:
+    state: absent
+    dest: '{{ user.home }}/.config/alacritty/{{ item.path }}'
+  with_filetree: ../templates
+  when: item.state == 'file'
+
+- name: Copy Alacritty configuration files
+  ansible.builtin.copy:
+    src: '{{ item.src }}'
+    dest: '{{ user.home }}/.config/alacritty/{{ item.path }}'
+    owner: '{{ user.name }}'
+    group: '{{ user.group }}'
+    mode: u=r,g=r,o=rw
+  with_filetree: ../templates
+  when: item.state == 'file'
+
+# sudo update-alternatives --install /usr/bin/x-terminal-emulator x-terminal-emulator $(which alacritty) 50
+# sudo update-alternatives --config x-terminal-emulator

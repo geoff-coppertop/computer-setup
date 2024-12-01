@@ -1,111 +1,65 @@
 ---
-- name: Install ZSH
-  community.general.homebrew:
-    name: zsh
-    state: present
-    update_homebrew: true
-
-- name: Get ZSH path
-  command: which zsh
-  register: zsh_location
-
-- name: Ensure homebrew zsh is in allowed shells
-  lineinfile:
-    path: /etc/shells
-    line: '{{ zsh_location.stdout }}'
-  become: true
-
 - name: Get user
-  user:
+  ansible.builtin.user:
     name: '{{ user_name }}'
-    shell: '{{ zsh_location.stdout }}'
     state: present
   register: user
-  become: true
 
-- name: Check if oh-my-zsh exists
-  stat:
-    path: '{{ user.home }}/.oh-my-zsh'
-  register: omz_path
+- name: Create a directory if it does not exist
+  ansible.builtin.file:
+    path: '{{ user.home }}/.config/bash'
+    owner: '{{ user.name }}'
+    group: '{{ user.group }}'
+    state: directory
+    mode: u=r,g=r,o=rw
 
-- name: Install git
-  community.general.homebrew:
-    name: git
-    state: present
-    update_homebrew: true
-
-- name: Checkout oh-my-zsh repository
-  git:
-    repo: https://github.com/ohmyzsh/ohmyzsh
-    dest: '{{ user.home }}/.oh-my-zsh'
-    depth: 1
-  when: not omz_path.stat.exists
-
-- name: Check if the p10k theme exists
-  stat:
-    path: '{{ user.home }}/.oh-my-zsh/custom/themes/powerlevel10k'
-  register: p10k_path
-
-- name: Checkout p10k theme repository
-  git:
-    repo: https://github.com/romkatv/powerlevel10k
-    dest: '{{ user.home }}/.oh-my-zsh/custom/themes/powerlevel10k'
-    depth: 1
-  when: not p10k_path.stat.exists
-
-- name: Install iterm2
-  community.general.homebrew_cask:
-    name: iterm2
-    state: present
-    update_homebrew: true
-
-- name: Start iTerm
-  command: open /Applications/iTerm.app
-  check_mode: false
-  changed_when: false
-
-- pause:
-    prompt: Allow iTerm2 to start
-
-- name: Ensure iTerm directories are initialized if they are not already.
-  command: open -a /Applications/iTerm.app
-  args:
-    creates: '{{ user.home }}/Library/Application Support/iTerm2/DynamicProfiles/'
-
-- name: Ensure shell integration is installed.
-  shell: curl -L https://iterm2.com/misc/install_shell_integration.sh | bash
-  args:
-    warn: false
-
-- name: Install iTerm profile
-  copy:
-    src: '{{ item.src }}'
-    dest: '{{ user.home }}/Library/Application Support/iTerm2/DynamicProfiles/{{ item.path }}'
+- name: Remove existing bash configuration files
+  file:
+    state: absent
+    dest: '{{ user.home }}/.config/bash/{{ item.path }}'
   with_filetree: ../templates
   when: item.state == 'file'
 
-- name: Attempting to apply iterm2 configurations
-  community.general.osx_defaults:
-    domain: com.googlecode.iterm2
-    key: '{{ item.name }}'
-    type: '{{ item.type }}'
-    value: '{{ item.value }}'
-  loop:
-  - name: Default Bookmark Guid
-    type: string
-    value: 99871ED7-F3BB-478A-8789-6C31EAC417EC
-  - name: OnlyWhenMoreTabs
-    type: bool
-    value: false
-  - name: PromptOnQuit
-    type: bool
-    value: false
-  - name: QuitWhenAllWindowsClosed
-    type: bool
-    value: true
-  - name: SUEnableAutomaticChecks
-    type: bool
-    value: true
-  - name: NoSyncTipsDisabled
-    type: bool
-    value: true
+- name: Copy bash configuration files
+  copy:
+    src: '{{ item.src }}'
+    dest: '{{ user.home }}/.config/bash/{{ item.path }}'
+    mode: u=r,g=r,o=rw
+  with_filetree: ../templates
+  when: item.state == 'file'
+
+- name: Create a symbolic link
+  ansible.builtin.file:
+    src: '{{ user.home }}/.config/bash/{{ item }}'
+    dest: '{{ user.home }}/.{{ item }}'
+    owner: '{{ user.name }}'
+    group: '{{ user.group }}'
+    mode: u=r,g=r,o=rw
+    state: link
+  with_items:
+    - bashrc
+    - inputrc
+
+
+# sudo apt install -y fzf ripgrep bat eza zoxide plocate btop fd-find
+
+# export BASH_CONFIG_PATH="$HOME/.config/bash"
+
+# mkdir -p $BASH_CONFIG_PATH
+
+# cp $CONFIG_PATH/bash/aliases $BASH_CONFIG_PATH/aliases
+# cp $CONFIG_PATH/bash/init $BASH_CONFIG_PATH/init
+# cp $CONFIG_PATH/bash/prompt $BASH_CONFIG_PATH/prompt
+# cp $CONFIG_PATH/bash/shell $BASH_CONFIG_PATH/shell
+
+# # Configure the bash shell using defaults
+# [ -f "~/.bashrc" ] && mv ~/.bashrc ~/.bashrc.bak
+# cp $CONFIG_PATH/bash/bashrc ~/.bashrc
+
+# # Load the PATH for use later in the installers
+# source $BASH_CONFIG_PATH/shell
+
+# [ -f "~/.inputrc" ] && mv ~/.inputrc ~/.inputrc.bak
+# # Configure the inputrc using defaults
+# cp $CONFIG_PATH/bash/inputrc ~/.inputrc
+

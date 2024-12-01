@@ -3,130 +3,66 @@
 - hosts: localhost
   connection: local
   gather_facts: true
+  become: true
 
   vars_prompt:
   - name: user_name
     prompt: Which user do you wish to modify?
     private: false
 
-  - name: github_access_token
-    prompt: What is your github access token?
-    private: false
+  # - name: github_access_token
+  #   prompt: What is your github access token?
+  #   private: false
+
+  # tasks:
+  # - name: Install apt packages
+  #   ansible.builtin.apt:
+  #     name:
+  #       - python3-psutil
+  #     state: present
 
   roles:
-  - ssh
-  - fonts
-  - dotfiles
-  - directories
-  - macos
-  - terminal
-  - app_store
+  # - git
+  # - terminal
+  # - flatpak
+  # - signal
+  # - code
+  # - steam
+  # - fonts
+  - nautilus
 
-  tasks:
-  - name: Use homebrew to install things
-    community.general.homebrew_cask:
-      name: '{{ item }}'
-      state: present
-      update_homebrew: true
-    with_items:
-    - visual-studio-code
-    - sourcetree
-    - signal
-    - discord
-    - steam
-    - zwift
-    - autodesk-fusion360
-    - ultimaker-cura
-    - wireshark
-    - postman
-    - balenaetcher
-    - docker
-    - mqtt-explorer
+  # tasks:
+  # - name: Remove default snaps
+  #   community.general.snap:
+  #     name: 
+  #       - firefox
+  #       - thunderbird
+  #     state: disabled
 
-  - name: Use homebrew to install more things
-    community.general.homebrew:
-      name: '{{ item }}'
-      state: present
-      update_homebrew: true
-    loop:
-    - sl
-    - postgresql
-    - go
-    - rust
-    - rustup-init
+  # - name: Remove default snaps
+  #   community.general.snap:
+  #     name: 
+  #       - firefox
+  #       - thunderbird
+  #     state: absent
 
-- hosts: localhost
-  vars:
-    dockitems_remove:
-    - Launchpad
-    - Podcasts
-    - App Store
-    - Maps
-    - Calendar
-    - Contacts
-    - Notes
-    - Podcasts
-    - Keynote
-    - News
-    - Numbers
-    - Pages
-    - System Preferences
-    - Mail
+  # - name: Remove apt packages
+  #   ansible.builtin.apt:
+  #     name:
+  #       - libreoffice-*
+  #       # - libreoffice-calc
+  #       # - libreoffice-core
+  #       # - libreoffice-math
+  #       # - libreoffice-impress
+  #       # - libreoffice-pdfimport
+  #       # - libreoffice-writer
+  #       - rhythmbox
+  #       - transmission-gtk
+  #     state: absent
+  #     purge: true
 
-    dockitems_persist:
-    - name: Photos
-      path: /Applications/Safari.app/
-      pos: 1
-
-    - name: TV
-      path: /System/Applications/TV.app/
-      pos: 2
-    - name: Music
-      path: /System/Applications/Music.app/
-      pos: 3
-
-    - name: Steam
-      path: /Applications/Steam.app/
-      pos: 4
-
-    - name: Safari
-      path: /Applications/Safari.app/
-      pos: 5
-
-    - name: Reminders
-      path: /System/Applications/Reminders.app/
-      pos: 6
-
-    - name: Messages
-      path: /System/Applications/Messages.app/
-      pos: 7
-    - name: Signal
-      path: /Applications/Signal.app/
-      pos: 8
-    - name: Discord
-      path: /Applications/Discord.app/
-      pos: 9
-    - name: FaceTime
-      path: /System/Applications/FaceTime.app/
-      pos: 10
-
-    - name: Visual Studio Code
-      path: /Applications/Visual Studio Code.app/
-      pos: 11
-    - name: iTerm
-      path: /Applications/iTerm.app/
-      pos: 12
-    - name: MQTT Explorer
-      path: /Applications/MQTT Explorer.app/
-      pos: 13
-    - name: Postman
-      path: /Applications/Postman.app/
-      pos: 14
-
-    - name: Autodesk Fusion 360
-      path: ~/Applications/Autodesk Fusion 360.app/
-      pos: 15
-
-  roles:
-  - geerlingguy.mac.homebrew
-  - geerlingguy.mac.dock
+  # - name: Install apt packages
+  #   ansible.builtin.apt:
+  #     name:
+  #       - steam-devices
+  #     state: present

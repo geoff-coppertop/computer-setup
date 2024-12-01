@@ -1,0 +1,12 @@
+---
+- name: Install apt package for steam device UDEV rules
+  ansible.builtin.apt:
+    name:
+      - steam-devices
+    state: present
+
+- name: Install steam
+  community.general.flatpak:
+    name:
+      - com.valvesoftware.Steam
+    state: latest

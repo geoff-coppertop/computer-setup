@@ -1,0 +1,36 @@
+{
+  "editor.fontFamily": "CaskaydiaMono Nerd Font",
+  "editor.tabSize": 2,
+  "editor.minimap.enabled": false,
+  "git.ignoreMissingGitWarning": true,
+  "editor.fontSize": 12,
+  "editor.formatOnSave": true,
+  "editor.occurrencesHighlight": "off",
+  "editor.selectionHighlight": false,
+  "editor.suggestOnTriggerCharacters": false,
+  "editor.tabCompletion": "on",
+  "editor.quickSuggestions": {
+    "other": false,
+    "comments": false,
+    "strings": false
+  },
+  "explorer.confirmDelete": false,
+  "extensions.ignoreRecommendations": true,
+  "files.autoSave": "onFocusChange",
+  "files.trimTrailingWhitespace": true,
+  "git.confirmSync": false,
+  "window.menuBarVisibility": "compact",
+  "git.autofetch": true,
+  "git.openRepositoryInParentFolders": "always",
+  "security.workspace.trust.untrustedFiles": "open",
+  "terminal.integrated.profiles.linux": {
+    "bash": {
+      "path": "zellij",
+      "icon": "terminal"
+    },
+    "JavaScript Debug Terminal": null
+  },
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "window.titleBarStyle": "custom",
+  "workbench.colorTheme": "Monokai Night"
+}

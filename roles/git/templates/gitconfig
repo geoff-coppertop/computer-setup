@@ -1,0 +1,32 @@
+[alias]
+	st  = status
+	dft = difftool
+	met = mergetool
+	pug = "!p() { git push origin HEAD:refs/for/$1; }; p"
+	pgh = "!p() { git push origin -u $1; }; p"
+	sfn = "submodule foreach git clean -xffdn"
+	sfc = "submodule foreach git clean -xffd"
+	upd = "submodule update --recursive --init"
+	lnc = log --pretty=format:"%h\\ %s"
+	amd = commit --amend
+
+[color]
+	diff = auto
+	status = auto
+	branch = auto
+	ui = true
+
+[commit]
+	template = ~/.config/git/template.txt
+
+[core]
+	longpaths = true
+	whitespace = cr-at-eol,tab-in-indent
+	autocrlf = input
+
+[init]
+  templateDir = ~/.config/git/
+
+[user]
+	name = Geoffrey Thomas
+	email = geoff.coppertop@gmail.com

@@ -1,0 +1,80 @@
+---
+- name: Install libraries
+  ansible.builtin.apt:
+    name:
+      - build-essential
+      - pkg-config
+      - autoconf
+      - bison
+      - clang
+      - libssl-dev
+      - libreadline-dev
+      - zlib1g-dev
+      - libyaml-dev
+      - libreadline-dev
+      - libncurses5-dev
+      - libffi-dev
+      - libgdbm-dev
+      - libjemalloc2
+      - libvips
+      - imagemagick
+      - libmagickwand-dev
+      - mupdf
+      - mupdf-tools
+      - fzf
+      - ripgrep
+      - bat
+      - eza
+      - zoxide
+      - plocate
+      - btop
+      - fd-find
+    state: present
+    update_cache: yes
+
+# # Remove the ImageMagick icon
+# sudo rm -rf /usr/share/applications/display-im6.q16.desktop
+
+- name: Get user
+  ansible.builtin.user:
+    name: '{{ user_name }}'
+    state: present
+  register: user
+
+- name: Create a directory if it does not exist
+  ansible.builtin.file:
+    path: '{{ user.home }}/.local/share/fonts'
+    owner: '{{ user.name }}'
+    group: '{{ user.group }}'
+    state: directory
+    mode: u=r,g=r,o=rw
+
+- name: Download Cascadia Mono font
+  ansible.builtin.unarchive:
+    src: https://github.com/ryanoasis/nerd-fonts/releases/latest/download/CascadiaMono.zip
+    dest: /tmp/CascadiaFont
+    mode: u=r,g=r,o=rw
+    remote_src: yes
+
+- name: Copy Cascadia Mono font
+  ansible.builtin.copy:
+    src: '{{ item.src }}'
+    dest: '{{ user.home }}/.local/share/fonts/{{ item.path }}'
+    owner: '{{ user.name }}'
+    group: '{{ user.group }}'
+    mode: u=r,g=r,o=rw
+  with_fileglob:
+    - "/tmp/CascadiaFont/*.ttf"
+  when: item.state == 'file'
+
+- name: Update font cache
+  ansible.builtin.command:
+    argv:
+      - fc-cache
+
+- name: Set Cascadia Mono as the default monospace font
+  community.general.dconf:
+    key: "/org/gnome/desktop/interface"
+    value: "['monospace-font-name', 'CaskaydiaMono Nerd Font 12']"
+    state: present
+    

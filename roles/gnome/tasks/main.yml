@@ -1,0 +1,62 @@
+---
+- name: Configure gnome
+  community.general.dconf:
+    key: '{{ item.address }}'
+    value: "['{{ item.key }}', '{{ item.value }}']"
+    state: present
+  with_items:
+    - { address: "/org/gnome/nautilus/preferences", key: "default-folder-viewer", value: "list-view" } # Use list view by default
+    - { address: "/org/gnome/nautilus/preferences", key: "default-sort-order", value: "type" } # Sort files by type
+    - { address: "/org/gnome/nautilus/list-view", key: "default-zoom-level", value: "small" } # Small zoom level
+    - { address: "/org/gnome/nautilus/preferences", key: "default-folder-viewer", value: "list-view" } # Use list view by default
+    - { address: "/org/gnome/nautilus/preferences", key: "default-folder-viewer", value: "list-view" } # Use list view by default
+    - { address: "/org/gnome/nautilus/preferences", key: "default-folder-viewer", value: "list-view" } # Use list view by default
+    - { address: "/org/gnome/nautilus/preferences", key: "default-folder-viewer", value: "list-view" } # Use list view by default
+
+- name: Get user
+  ansible.builtin.user:
+    name: '{{ user_name }}'
+    state: present
+  register: user
+
+- name: Create a directory if it does not exist
+  ansible.builtin.file:
+    path: '{{ user.home }}/{{ item }}'
+    owner: '{{ user.name }}'
+    group: '{{ user.group }}'
+    state: directory
+    mode: u=rwx,g=rx,o=rx
+  with_items:
+    - builds
+    - .config/nautilus
+
+- name: Remove existing Nautilus configuration files
+  file:
+    state: absent
+    dest: '{{ user.home }}/.config/gtk-3.0/bookmarks'
+
+- name: Remove existing bash configuration files
+  file:
+    state: absent
+    dest: '{{ user.home }}/.config/nautilus/{{ item.path }}'
+  with_filetree: ../templates
+  when: item.state == 'file'
+
+- name: Copy bash configuration files
+  copy:
+    src: '{{ item.src }}'
+    dest: '{{ user.home }}/.config/nautilus/{{ item.path }}'
+    mode: u=rw,g=r,o=r
+  with_filetree: ../templates
+  when: item.state == 'file'
+
+- name: Create a symbolic link
+  ansible.builtin.file:
+    src: '{{ user.home }}/.config/nautilus/{{ item }}'
+    dest: '{{ user.home }}/.config/gtk-3.0/{{ item }}'
+    owner: '{{ user.name }}'
+    group: '{{ user.group }}'
+    mode: u=rw,g=r,o=r
+    state: link
+  with_items:
+    - bookmarks

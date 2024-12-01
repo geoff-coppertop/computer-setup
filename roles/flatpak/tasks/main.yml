@@ -1,0 +1,28 @@
+---
+- name: Install apt packages
+  ansible.builtin.apt:
+    name:
+      - flatpak
+      - gnome-software-plugin-flatpak
+    state: present
+
+- name: Add the flathub flatpak repository remote to the user installation
+  community.general.flatpak_remote:
+    name: flathub
+    state: present
+    flatpakrepo_url: https://dl.flathub.org/repo/flathub.flatpakrepo
+    method: user
+
+- name: Install multiple flatpak packages
+  community.general.flatpak:
+    name:
+      - com.bitwarden.desktop
+      - com.discordapp.Discord
+      - org.mozilla.firefox
+      - org.flameshot.Flameshot
+      - org.gimp.GIMP
+      - org.kicad.KiCad
+      - io.mango3d.LycheeSlicer
+      - md.obsidian.Obsidian
+      - com.github.tchx84.Flatseal
+    state: latest

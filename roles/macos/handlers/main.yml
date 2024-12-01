@@ -1,6 +1,0 @@
----
-- name: restart dock
-  command: killall Dock
-
-- name: restart finder
-  command: killall Finder

@@ -1,5 +1,20 @@
 #!/usr/bin/env bash
 
+sudo apt install -y \
+  python3-pip \
+  python3-virtualenv
+
+venvdir="./.venv"
+virtualenv $venvdir
+source "$venvdir/bin/activate"
+
+pip install -r ./requirements.txt
+ansible-galaxy install -r ./requirements.yml
+
+ansible-playbook ./playbooks/setup.yml -K
+
+deactivate
+
 which -s brew
 if [[ $? != 0 ]] ; then
     # Install Homebrew

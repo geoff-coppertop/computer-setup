@@ -1,0 +1,48 @@
+---
+- name: Get user
+  ansible.builtin.user:
+    name: '{{ user_name }}'
+    state: present
+  register: user
+
+- name: Create a directory if it does not exist
+  ansible.builtin.file:
+    path: '{{ user.home }}/.config/Code/User'
+    owner: '{{ user.name }}'
+    group: '{{ user.group }}'
+    state: directory
+    mode: u=r,g=r,o=rw
+
+- name: Remove existing VSCode configuration files
+  ansible.builtin.file:
+    state: absent
+    dest: '{{ user.home }}/.config/Code/User/{{ item.path }}'
+  with_filetree: ../templates
+  when: item.state == 'file'
+
+- name: Copy VSCode configuration files
+  ansible.builtin.copy:
+    src: '{{ item.src }}'
+    dest: '{{ user.home }}/.config/Code/User/{{ item.path }}'
+    owner: '{{ user.name }}'
+    group: '{{ user.group }}'
+    mode: u=r,g=r,o=rw
+  with_filetree: ../templates
+  when: item.state == 'file'
+
+- name: Install VSCode
+  community.general.flatpak:
+    name:
+      - com.visualstudio.code
+    state: latest
+
+- name: Install VSCode theme extension
+  ansible.builtin.command:
+    argv:
+      - flatpak
+      - run
+      - --command=bash
+      - com.visualstudio.code
+      - code
+      - --install-extension
+      - fabiospampinato.vscode-monokai-night

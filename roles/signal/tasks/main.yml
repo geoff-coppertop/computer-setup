@@ -1,0 +1,15 @@
+---
+- name: Install signal
+  community.general.flatpak:
+    name:
+      - org.signal.Signal
+    state: latest
+
+- name: Set signal to use the gnome secret store
+  ansible.builtin.command:
+    argv:
+      - flatpak
+      - override
+      - --user
+      - --env=SIGNAL_PASSWORD_STORE=gnome-libsecret
+      - org.signal.Signal 
